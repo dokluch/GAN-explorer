@@ -199,8 +199,7 @@ def get_render_controls():
             assert len(os.listdir(sequence_folder)) != 0
             assert button_add_seed.seeds
             SEEDS = button_add_seed.seeds
-
-    create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
+            create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
     def render_sequence(seeds, num_steps, output_folder, easy_ease = 1, loop = True):
         STEPS = num_steps
