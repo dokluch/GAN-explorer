@@ -52,7 +52,7 @@ def make_img_from_seed(Gs, seed_in = 0):
     torch.manual_seed(seed_in)
     z1 = torch.randn([1, Gs.z_dim]).cuda() 
 
-    w = Gs.mapping(z1, c, truncation_psi=0.5, truncation_cutoff=8)
+    w = Gs.mapping(z1, None, truncation_psi=0.7, truncation_cutoff=8)
     img = G.synthesis(w, noise_mode='const', force_fp32=True)
 
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
