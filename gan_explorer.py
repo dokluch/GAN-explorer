@@ -137,7 +137,7 @@ def get_render_controls():
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
-            os.system(f"rm {os.path.join(sequence_folder, '*')}")"
+            os.system(f"rm {os.path.join(sequence_folder, '*')}")
 
             idx = 0
             tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
