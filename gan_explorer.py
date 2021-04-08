@@ -52,6 +52,7 @@ def get_model_loader(model):
         with output_model_select:
             if(models_select.value):
                 model.update_name_path(models_select.value, models_dict[models_select.value])
+                print(f"Model {models_select.value} selected")
 
     models_select = widgets.Dropdown(options=models_list,description='Model',disabled=False)
     load_model_bttn = widgets.Button(description="Load model")
@@ -59,6 +60,8 @@ def get_model_loader(model):
     load_model_bttn.on_click(load_model_onclick)
 
     output_model_select = widgets.Output()
+
+    load_model_onclick(load_model_bttn) #autoclick
 
     return bttns, output_model_select
 
@@ -137,7 +140,7 @@ def get_timeline_controls(model, seeds_updater):
         if seeds_updater.imgs_list:
             ipyplot.plot_images(seeds_updater.imgs_list, labels = seeds_updater.seed_list, img_width=200)
 
-    def on_button_clicked(b):
+    def on_random_clicked(b):
         with output:
             clear_output()
             seed_gen = np.random.randint(0, 400000)
@@ -178,10 +181,10 @@ def get_timeline_controls(model, seeds_updater):
     button_remove_last.on_click(on_remove_last)
 
     button_get_random.prev_seeds = []
-    button_get_random.on_click(on_button_clicked)
+    button_get_random.on_click(on_random_clicked)
     button_prev.on_click(on_prev)
     button_next.on_click(on_next)
-    on_button_clicked(button_get_random)
+    on_random_clicked(button_get_random)
 
     return(output, buttons_line_1, buttons_line_2, output2)
 
