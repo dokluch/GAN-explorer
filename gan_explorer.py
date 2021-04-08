@@ -209,31 +209,31 @@ def get_render_controls(model, button_add_seed):
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
-            os.system(f"rm {os.path.join(sequence_folder, '*')}")
+        os.system(f"rm {os.path.join(sequence_folder, '*')}")
 
-            idx = 0
-            tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
+        idx = 0
+        tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
 
-            for i in tqdm_progress:
-                v1 = seed2vec(model.model, seeds[i])
-                v2 = seed2vec(model.model, seeds[i+1])
+        for i in tqdm_progress:
+            v1 = seed2vec(model.model, seeds[i])
+            v2 = seed2vec(model.model, seeds[i+1])
 
-                diff = v2 - v1
-                step = diff / STEPS
-                current = v1.clone().detach()
+            diff = v2 - v1
+            step = diff / STEPS
+            current = v1.clone().detach()
 
-                for s, j in enumerate(range(STEPS)):
-                    tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*STEPS + s} / {(len(seeds) - 1) * STEPS}")
-                    tqdm_progress.refresh()
+            for s, j in enumerate(range(STEPS)):
+                tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*STEPS + s} / {(len(seeds) - 1) * STEPS}")
+                tqdm_progress.refresh()
 
-                    now = current + diff * easing((s + 0.01 ) / STEPS, easy_ease)
-                    img = generate_image(model.model, now, 1.0)
-                    img.save(os.path.join(output_folder,f'frame-{idx}.png'))
-                    idx+=1
+                now = current + diff * easing((s + 0.01 ) / STEPS, easy_ease)
+                img = generate_image(model.model, now, 1.0)
+                img.save(os.path.join(output_folder,f'frame-{idx}.png'))
+                idx+=1
 
-                    print("Rendering video")
-                    create_video(sequence_folder, video_folder, fps_text.value, seeds)
-                    print("Finished rendering")
+        print("Rendering video")
+        create_video(sequence_folder, video_folder, fps_text.value, seeds)
+        print("Finished rendering")
 
     def create_video(sequence_folder, output_folder, FPS, seeds):
         seeds_list = "_".join([str(s) for s in seeds])
