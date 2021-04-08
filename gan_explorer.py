@@ -16,12 +16,16 @@ class stylegan2_ada_model:
     def __init__(self):
         self.name = ""
         self.path = ""
+        self.prefix = ""
         self.model = None
 
     def update_name_path(self, name, path):
         self.name = name
         self.path = path
         self.model = self.load_model()
+
+    def update_prefix(self, prefix):
+        self.prefix = prefix
 
     def load_model(self):
         with open(self.path, 'rb') as f:
@@ -246,7 +250,7 @@ def get_render_controls(model, seeds_updater):
         seeds_list = "_".join([str(s) for s in seeds])
         input_sequence = os.path.join(sequence_folder, "frame-%d.png")
         img = Image.open(os.path.join(sequence_folder, os.listdir(sequence_folder)[0]))
-        output_file = os.path.join(output_folder, f"{prefix}_{seeds_list}.mp4")
+        output_file = os.path.join(output_folder, f"{model.prefix}_{seeds_list}.mp4")
         os.system(f"ffmpeg -r {FPS} -i {input_sequence} -c:v libx264 -b:v 15M -pix_fmt yuv420p {output_file} -y")
         clear_output()
 
