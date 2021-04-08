@@ -10,7 +10,7 @@ import IPython.display
 from IPython.display import display, clear_output
 from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 
 class stylegan2_ada_model:
     def __init__(self):
