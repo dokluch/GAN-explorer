@@ -23,7 +23,7 @@ class stylegan2_ada_model:
         self.model = self.load_model()
 
     def load_model(self):
-        with open(network_latest_path, 'rb') as f:
+        with open(self.path, 'rb') as f:
             G = pickle.load(f)['G_ema'].cuda() 
         return(G)  
 
