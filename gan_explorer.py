@@ -11,6 +11,40 @@ from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 from tqdm import tqdm
 
+def make_img_from_seed(seed_in = 0):
+    torch.manual_seed(seed_in)
+    z1 = torch.randn([1, G.z_dim]).cuda() 
+
+    w = G.mapping(z1, c, truncation_psi=0.5, truncation_cutoff=8)
+    img = G.synthesis(w, noise_mode='const', force_fp32=True)
+
+    img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
+    img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
+
+    return(img)
+
+def make_img_from_vec(vec_in = 0):
+    w = G.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
+    img = G.synthesis(w, noise_mode='const', force_fp32=True)
+
+    img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
+    img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
+
+    return(img)
+    
+def seed2vec(seed_in = 0):
+    torch.manual_seed(seed_in)
+    z = torch.randn([1, G.z_dim]).cuda()
+    return z
+
+def generate_image(Gs, z, truncation_psi):
+    w = Gs.mapping(z, c, truncation_psi=0.7, truncation_cutoff=8)
+    img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
+
+    img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
+    img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
+    return img
+
 def get_timeline_controls():
     button_get_random = widgets.Button(description="Get random seed")
     button_prev = widgets.Button(description="<<<")
