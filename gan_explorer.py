@@ -82,7 +82,7 @@ def generate_image(Gs, z, truncation_psi):
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
     return img
 
-def get_timeline_controls():
+def get_timeline_controls(model):
     button_get_random = widgets.Button(description="Get random seed")
     button_prev = widgets.Button(description="<<<")
     button_next = widgets.Button(description=">>>")
@@ -128,7 +128,7 @@ def get_timeline_controls():
             clear_output()
             seed_gen = np.random.randint(0, 400000)
             print(seed_gen)
-            b.img = make_img_from_seed(current_model.model, seed_gen).resize((256,256))
+            b.img = make_img_from_seed(model.model, seed_gen).resize((256,256))
             display(b.img)
             b.seed = seed_gen
             b.prev_seeds.append(b.seed)
@@ -172,7 +172,7 @@ def get_timeline_controls():
     return(output, buttons_line_1, buttons_line_2, output2)
 
 
-def get_render_controls():
+def get_render_controls(model):
     STEPS = 100
     easy_ease = 1
     loop = True
@@ -191,7 +191,7 @@ def get_render_controls():
             clear_output()
             assert button_add_seed.seeds
             seeds = button_add_seed.seeds
-            render_sequence(current_model, seeds, steps_slider.value, sequence_folder, easing_slider.value, loop_chkbx.value)
+            render_sequence(model, seeds, steps_slider.value, sequence_folder, easing_slider.value, loop_chkbx.value)
 
     def render_vid_bttn_click(b):
         with output3:
