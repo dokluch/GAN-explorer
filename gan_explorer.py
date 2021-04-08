@@ -4,9 +4,10 @@ import os, math, ipyplot
 import numpy as np
 import torch, torchvision, pickle
 import PIL
+from PIL import Image
 from matplotlib.pyplot import imshow
 import IPython.display
-from IPython.display import Image, display, clear_output
+from IPython.display import display, clear_output
 from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 from tqdm import tqdm
@@ -61,6 +62,7 @@ def make_img_from_seed(Gs, seed_in = 0):
     return(img)
 
 def make_img_from_vec(Gs, vec_in = 0):
+    c = None
     w = Gs.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
 
@@ -69,12 +71,13 @@ def make_img_from_vec(Gs, vec_in = 0):
 
     return(img)
     
-def seed2vec(seed_in = 0):
+def seed2vec(Gs, seed_in = 0):
     torch.manual_seed(seed_in)
-    z = torch.randn([1, G.z_dim]).cuda()
+    z = torch.randn([1, Gs.z_dim]).cuda()
     return z
 
 def generate_image(Gs, z, truncation_psi):
+    c = None
     w = Gs.mapping(z, c, truncation_psi=0.7, truncation_cutoff=8)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
 
@@ -172,7 +175,7 @@ def get_timeline_controls(model):
     return(output, buttons_line_1, buttons_line_2, output2)
 
 
-def get_render_controls(model):
+def get_render_controls(model, button_add_seed):
     STEPS = 100
     easy_ease = 1
     loop = True
@@ -184,7 +187,6 @@ def get_render_controls(model):
     def easing(x, beta):
         b = beta
         return 1 / (1 + math.pow(x / (1 - x + 1e-8), -b))
-
 
     def render_seq_bttn_click(b):
         with output3:
@@ -213,8 +215,8 @@ def get_render_controls(model):
             tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
 
             for i in tqdm_progress:
-                v1 = seed2vec(seeds[i])
-                v2 = seed2vec(seeds[i+1])
+                v1 = seed2vec(model.model, seeds[i])
+                v2 = seed2vec(model.model, seeds[i+1])
 
                 diff = v2 - v1
                 step = diff / STEPS
