@@ -1,0 +1,10 @@
+ipyplot 
+click 
+psutil 
+scipy 
+requests 
+tqdm 
+pyspng 
+ninja 
+imageio 
+imageio-ffmpeg==0.4.3 
