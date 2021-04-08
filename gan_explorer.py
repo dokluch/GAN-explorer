@@ -139,7 +139,7 @@ def get_timeline_controls(model, seeds_updater):
                 display_seeds_as_imgs()
 
     def on_reset(b):
-        with output2():
+        with output2:
             seeds_updater.reset()
             display_seeds_as_imgs()
 
