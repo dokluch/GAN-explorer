@@ -11,11 +11,48 @@ from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 from tqdm import tqdm
 
-def make_img_from_seed(seed_in = 0):
-    torch.manual_seed(seed_in)
-    z1 = torch.randn([1, G.z_dim]).cuda() 
+class stylegan2_ada_model:
+    def __init__(self):
+        self.name = ""
+        self.path = ""
+        self.model = None
 
-    w = G.mapping(z1, c, truncation_psi=0.5, truncation_cutoff=8)
+    def update_name_path(self, name, path):
+        self.name = name
+        self.path = path
+        self.model = self.load_model()
+
+    def load_model(self):
+        with open(network_latest_path, 'rb') as f:
+            G = pickle.load(f)['G_ema'].cuda() 
+        return(G)  
+
+def get_model_loader(model):
+
+    models_list = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir("/content/models")]
+    models_paths = [os.path.join("/content/models",f) for f in os.listdir("/content/models")]
+    models_dict = dict(zip(models_list, models_paths))
+
+
+    def load_model_onclick(b):
+        with output_model_select:
+            if(models_select.value):
+                model.update_name_path(models_select.value, models_dict[models_select.value])
+
+    models_select = widgets.Dropdown(options=models_list,description='Model',disabled=False)
+    load_model_bttn = widgets.Button(description="Load model")
+    bttns = widgets.HBox([models_select, load_model_bttn])
+    load_model_bttn.on_click(load_model_onclick)
+
+    output_model_select = widgets.Output()
+
+    return bttns, output_model_select
+
+def make_img_from_seed(Gs, seed_in = 0):
+    torch.manual_seed(seed_in)
+    z1 = torch.randn([1, Gs.z_dim]).cuda() 
+
+    w = Gs.mapping(z1, c, truncation_psi=0.5, truncation_cutoff=8)
     img = G.synthesis(w, noise_mode='const', force_fp32=True)
 
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
@@ -23,9 +60,9 @@ def make_img_from_seed(seed_in = 0):
 
     return(img)
 
-def make_img_from_vec(vec_in = 0):
-    w = G.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
-    img = G.synthesis(w, noise_mode='const', force_fp32=True)
+def make_img_from_vec(Gs, vec_in = 0):
+    w = Gs.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
+    img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
 
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
@@ -91,7 +128,7 @@ def get_timeline_controls():
             clear_output()
             seed_gen = np.random.randint(0, 400000)
             print(seed_gen)
-            b.img = make_img_from_seed(seed_gen).resize((256,256))
+            b.img = make_img_from_seed(current_model.model, seed_gen).resize((256,256))
             display(b.img)
             b.seed = seed_gen
             b.prev_seeds.append(b.seed)
@@ -103,7 +140,7 @@ def get_timeline_controls():
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos >= 1:
                 button_get_random.pos -= 1
                 button_get_random.seed = button_get_random.prev_seeds[button_get_random.pos]
-                button_get_random.img = make_img_from_seed( button_get_random.seed).resize((256,256))
+                button_get_random.img = make_img_from_seed(current_model.model, button_get_random.seed).resize((256,256))
                 clear_output()
                 print(button_get_random.seed)
                 display(button_get_random.img)
@@ -114,7 +151,7 @@ def get_timeline_controls():
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos < len(button_get_random.prev_seeds) - 1:
                 button_get_random.pos += 1
                 button_get_random.seed = button_get_random.prev_seeds[button_get_random.pos]
-                button_get_random.img = make_img_from_seed( button_get_random.seed).resize((256,256))
+                button_get_random.img = make_img_from_seed(current_model.model, button_get_random.seed).resize((256,256))
                 clear_output()
                 print(button_get_random.seed)
                 display(button_get_random.img)
@@ -189,7 +226,7 @@ def get_render_controls():
                     tqdm_progress.refresh()
 
                     now = current + diff * easing((s + 0.01 ) / STEPS, easy_ease)
-                    img = generate_image(G, now, 1.0)
+                    img = generate_image(current_model.model, now, 1.0)
                     img.save(os.path.join(output_folder,f'frame-{idx}.png'))
                     idx+=1
 
