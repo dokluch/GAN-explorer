@@ -1,3 +1,16 @@
+from __future__ import print_function
+
+import os, math, ipyplot
+import numpy as np
+import torch, torchvision, pickle
+import PIL
+from matplotlib.pyplot import imshow
+import IPython.display
+from IPython.display import Image, display, clear_output
+from ipywidgets import interact, interactive, fixed, interact_manual
+import ipywidgets as widgets
+from tqdm import tqdm
+
 def get_timeline_controls():
     button_get_random = widgets.Button(description="Get random seed")
     button_prev = widgets.Button(description="<<<")
@@ -124,7 +137,7 @@ def get_render_controls():
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
-            !rm {os.path.join(sequence_folder, "*")}
+            os.system(f"rm {os.path.join(sequence_folder, '*')}")"
 
             idx = 0
             tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
@@ -155,7 +168,7 @@ def get_render_controls():
         input_sequence = os.path.join(sequence_folder, "frame-%d.png")
         img = Image.open(os.path.join(sequence_folder, os.listdir(sequence_folder)[0]))
         output_file = os.path.join(output_folder, f"{prefix}_{seeds_list}.mp4")
-        !ffmpeg -r {FPS} -i {input_sequence} -c:v libx264 -b:v 15M -pix_fmt yuv420p {output_file} -y
+        os.system(f"ffmpeg -r {FPS} -i {input_sequence} -c:v libx264 -b:v 15M -pix_fmt yuv420p {output_file} -y")
         clear_output()
 
 
