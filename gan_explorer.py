@@ -51,8 +51,8 @@ def get_model_loader(model):
 def make_img_from_seed(Gs, seed_in = 0):
     torch.manual_seed(seed_in)
     z1 = torch.randn([1, Gs.z_dim]).cuda() 
-
-    w = Gs.mapping(z1, None, truncation_psi=0.7, truncation_cutoff=8)
+    c = None #class
+    w = Gs.mapping(z1, c, truncation_psi=0.7, truncation_cutoff=8)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
 
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
@@ -103,11 +103,11 @@ def get_timeline_controls(model):
                 if b.seeds[-1] != button_get_random.seed:
                     b.seeds.append(button_get_random.seed)
                     b.imgs.append(button_get_random.img)
-                else:
-                    b.seeds.append(button_get_random.seed)
-                    b.imgs.append(button_get_random.img)
-                    print(b.seeds)
-                    display_seeds_as_imgs()
+            else:
+                b.seeds.append(button_get_random.seed)
+                b.imgs.append(button_get_random.img)
+            print(b.seeds)
+            display_seeds_as_imgs()
 
     def on_remove_last(b):
         with output2:
@@ -140,7 +140,7 @@ def get_timeline_controls(model):
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos >= 1:
                 button_get_random.pos -= 1
                 button_get_random.seed = button_get_random.prev_seeds[button_get_random.pos]
-                button_get_random.img = make_img_from_seed(current_model.model, button_get_random.seed).resize((256,256))
+                button_get_random.img = make_img_from_seed(model.model, button_get_random.seed).resize((256,256))
                 clear_output()
                 print(button_get_random.seed)
                 display(button_get_random.img)
@@ -151,7 +151,7 @@ def get_timeline_controls(model):
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos < len(button_get_random.prev_seeds) - 1:
                 button_get_random.pos += 1
                 button_get_random.seed = button_get_random.prev_seeds[button_get_random.pos]
-                button_get_random.img = make_img_from_seed(current_model.model, button_get_random.seed).resize((256,256))
+                button_get_random.img = make_img_from_seed(model.model, button_get_random.seed).resize((256,256))
                 clear_output()
                 print(button_get_random.seed)
                 display(button_get_random.img)
