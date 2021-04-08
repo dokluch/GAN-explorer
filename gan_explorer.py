@@ -198,16 +198,16 @@ def get_render_controls(model, seeds_updater):
     def render_seq_bttn_click(b):
         with output3:
             clear_output()
-            assert seeds_updater.seeds_list
-            seeds = seeds_updater.seeds_list
+            assert seeds_updater.seed_list
+            seeds = seeds_updater.seed_list
             render_sequence(model, seeds, steps_slider.value, sequence_folder, easing_slider.value, loop_chkbx.value)
 
     def render_vid_bttn_click(b):
         with output3:
             clear_output()
             assert len(os.listdir(sequence_folder)) != 0
-            assert seeds_updater.seeds_list
-            SEEDS = seeds_updater.seeds_list
+            assert seeds_updater.seed_list
+            SEEDS = seeds_updater.seed_list
             create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
     def render_sequence(model, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
