@@ -111,21 +111,21 @@ def get_timeline_controls(model, seeds_updater):
     def on_save_clicked(b):
         with output2:
             clear_output()
-            if(seeds_updater.seeds):
-                if seeds_updater.seeds[-1] != button_get_random.seed:
+            if(seeds_updater.seeds_list):
+                if seeds_updater.seeds_list[-1] != button_get_random.seed:
                     seeds_updater.add_seed_img(button_get_random.seed, button_get_random.img)
             else:
                 seeds_updater.add_seed_img(button_get_random.seed, button_get_random.img)
 
-            print(seeds_updater.seeds)
+            print(seeds_updater.seeds_list)
             display_seeds_as_imgs()
 
     def on_remove_last(b):
         with output2:
             clear_output()
-            if(seeds_updater.seeds):
+            if(seeds_updater.seeds_list):
                 seeds_updater.remove_last()
-                print(seeds_updater.seeds)
+                print(seeds_updater.seeds_list)
                 display_seeds_as_imgs()
 
 
