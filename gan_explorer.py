@@ -42,6 +42,9 @@ class seeds_updater:
     def remove_last(self):
         self.seed_list = self.seed_list[:-1]
         self.imgs_list = self.imgs_list[:-1]
+    def reset(self):
+        self.seed_list = []
+        self.imgs_list = []
 
 def get_model_loader(model):
     models_list = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir("/content/models")]
@@ -107,12 +110,12 @@ def get_timeline_controls(model, seeds_updater):
     button_next = widgets.Button(description=">>>")
     buttons_line_1 = widgets.HBox([button_prev, button_get_random, button_next])
 
-    output = widgets.Output()
-
     button_add_seed = widgets.Button(description="Add seed")
     button_remove_last = widgets.Button(description="Remove last seed")
-    buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last])
+    button_reset = widgets.Button(description="Reset timeline")
+    buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last, button_reset])
 
+    output = widgets.Output()
     output2 = widgets.Output()
 
     def on_save_clicked(b):
@@ -135,6 +138,10 @@ def get_timeline_controls(model, seeds_updater):
                 print(seeds_updater.seed_list)
                 display_seeds_as_imgs()
 
+    def on_reset(b):
+        with output2():
+            seeds_updater.reset()
+            display_seeds_as_imgs()
 
     def display_seeds_as_imgs():
         if seeds_updater.imgs_list:
@@ -179,6 +186,7 @@ def get_timeline_controls(model, seeds_updater):
     button_add_seed.imgs = []
     button_add_seed.on_click(on_save_clicked)
     button_remove_last.on_click(on_remove_last)
+    button_reset.on_click(on_reset)
 
     button_get_random.prev_seeds = []
     button_get_random.on_click(on_random_clicked)
