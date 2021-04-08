@@ -28,12 +28,21 @@ class stylegan2_ada_model:
             G = pickle.load(f)['G_ema'].cuda() 
         return(G)  
 
-def get_model_loader(model):
+class seeds_updater:
+    def __init__(self):
+        self.seed_list = []
+        self.imgs_list = []
+    def add_seed_img(self, seed, img):
+        self.seed_list.append(seed)
+        self.imgs_list.append(img)
+    def remove_last(self):
+        self.seed_list = self.seed_list[:-1]
+        self.imgs_list = self.imgs_list[:-1]
 
+def get_model_loader(model):
     models_list = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir("/content/models")]
     models_paths = [os.path.join("/content/models",f) for f in os.listdir("/content/models")]
     models_dict = dict(zip(models_list, models_paths))
-
 
     def load_model_onclick(b):
         with output_model_select:
@@ -85,7 +94,7 @@ def generate_image(Gs, z, truncation_psi):
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
     return img
 
-def get_timeline_controls(model):
+def get_timeline_controls(model, seeds_updater):
     button_get_random = widgets.Button(description="Get random seed")
     button_prev = widgets.Button(description="<<<")
     button_next = widgets.Button(description=">>>")
@@ -102,29 +111,27 @@ def get_timeline_controls(model):
     def on_save_clicked(b):
         with output2:
             clear_output()
-            if(b.seeds):
-                if b.seeds[-1] != button_get_random.seed:
-                    b.seeds.append(button_get_random.seed)
-                    b.imgs.append(button_get_random.img)
+            if(seeds_updater.seeds):
+                if seeds_updater.seeds[-1] != button_get_random.seed:
+                    seeds_updater.add_seed_img(button_get_random.seed, button_get_random.img)
             else:
-                b.seeds.append(button_get_random.seed)
-                b.imgs.append(button_get_random.img)
-            print(b.seeds)
+                seeds_updater.add_seed_img(button_get_random.seed, button_get_random.img)
+
+            print(seeds_updater.seeds)
             display_seeds_as_imgs()
 
     def on_remove_last(b):
         with output2:
             clear_output()
-            if(button_add_seed.seeds):
-                button_add_seed.seeds = button_add_seed.seeds[:-1]
-                button_add_seed.imgs = button_add_seed.imgs[:-1]
-                print(button_add_seed.seeds)
+            if(seeds_updater.seeds):
+                seeds_updater.remove_last()
+                print(seeds_updater.seeds)
                 display_seeds_as_imgs()
 
 
     def display_seeds_as_imgs():
-        if button_add_seed.imgs:
-            ipyplot.plot_images(button_add_seed.imgs, labels = button_add_seed.seeds, img_width=200)
+        if seeds_updater.imgs_list:
+            ipyplot.plot_images(seeds_updater.imgs_list, labels = seeds_updater.seeds_list, img_width=200)
 
     def on_button_clicked(b):
         with output:
@@ -175,7 +182,7 @@ def get_timeline_controls(model):
     return(output, buttons_line_1, buttons_line_2, output2)
 
 
-def get_render_controls(model, button_add_seed):
+def get_render_controls(model, seeds_updater):
     STEPS = 100
     easy_ease = 1
     loop = True
@@ -191,16 +198,16 @@ def get_render_controls(model, button_add_seed):
     def render_seq_bttn_click(b):
         with output3:
             clear_output()
-            assert button_add_seed.seeds
-            seeds = button_add_seed.seeds
+            assert seeds_updater.seeds_list
+            seeds = seeds_updater.seeds_list
             render_sequence(model, seeds, steps_slider.value, sequence_folder, easing_slider.value, loop_chkbx.value)
 
     def render_vid_bttn_click(b):
         with output3:
             clear_output()
             assert len(os.listdir(sequence_folder)) != 0
-            assert button_add_seed.seeds
-            SEEDS = button_add_seed.seeds
+            assert seeds_updater.seeds_list
+            SEEDS = seeds_updater.seeds_list
             create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
     def render_sequence(model, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
