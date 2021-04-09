@@ -260,7 +260,7 @@ def get_render_controls(model, seeds_updater):
         input_sequence = os.path.join(sequence_folder, "frame-%d.png")
         img = Image.open(os.path.join(sequence_folder, os.listdir(sequence_folder)[0]))
         output_file = os.path.join(output_folder, f"{model.prefix}_{seeds_list}.mp4")
-        os.system(f"ffmpeg -r {FPS} -i {input_sequence} -c:v libx264 -b:v 15M -pix_fmt yuv422p10le {output_file} -y")
+        os.system(f"ffmpeg -r {FPS} -i {input_sequence} -c:v libx264 -b:v 15M -pix_fmt yuv420p {output_file} -y")
         clear_output()
 
     steps_slider = widgets.IntSlider(min=10, max=1000, step=10, value = STEPS, description='Frames between seeds')
