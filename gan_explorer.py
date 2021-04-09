@@ -196,11 +196,12 @@ def get_render_controls(model, seeds_updater):
     def get_normalized_distances(seeds, frames):
 
         vecs = [seed2vec(model.model, s) for s in seeds]
-        dist = np.array([])
+        dist = []
 
         for t in range(len(vecs) - 1):
             dist.append(((vecs[t]-vecs[t + 1])**2).sum(axis=1).item()) #Euclidian distance
-            
+        
+        dist = np.array(dist)
         dist /= np.average(dist)
         factor = len(dist) * frames / sum(dist)
         dist = (factor * dist).astype("int")
