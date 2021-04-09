@@ -195,7 +195,7 @@ def get_render_controls(model, seeds_updater):
 
     def get_normalized_distances(seeds, frames):
 
-        vecs = [seed2vec(s) for s in seeds]
+        vecs = [seed2vec(model.model, s) for s in seeds]
         dist = np.array([])
 
         for t in range(len(vecs) - 1):
