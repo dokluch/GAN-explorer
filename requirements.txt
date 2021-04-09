@@ -8,3 +8,4 @@ pyspng
 ninja 
 imageio 
 imageio-ffmpeg==0.4.3 
+ISR
