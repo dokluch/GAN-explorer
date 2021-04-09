@@ -41,12 +41,15 @@ class seeds_updater:
     def __init__(self):
         self.seed_list = []
         self.imgs_list = []
+
     def add_seed_img(self, seed, img):
         self.seed_list.append(seed)
         self.imgs_list.append(img)
+
     def remove_last(self):
         self.seed_list = self.seed_list[:-1]
         self.imgs_list = self.imgs_list[:-1]
+        
     def reset(self):
         self.seed_list = []
         self.imgs_list = []
