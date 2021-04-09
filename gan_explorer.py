@@ -12,7 +12,10 @@ from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 from tqdm.notebook import tqdm
 
-from timeline_controls, render_controls, model_loader, stylegan2_ada_tools import *
+from timeline_controls import *
+from render_controls import *
+from model_loader import *
+from stylegan2_ada_tools import *
 
 class stylegan2_ada_model:
     def __init__(self):
