@@ -11,6 +11,19 @@ def get_render_controls(model, seeds_updater):
         b = beta
         return 1 / (1 + math.pow(x / (1 - x + 1e-8), -b))
 
+    def get_normalized_distances(seeds, frames):
+
+        vecs = [seed2vec(s) for s in seeds]
+        dist = np.array([])
+
+        for t in range(len(vecs) - 1):
+            dist.append(((vecs[t]-vecs[t + 1])**2).sum(axis=1).item()) #Euclidian distance
+            dist /= np.average(dist)
+            factor = len(dist) * frames / sum(dist)
+            dist = (factor * dist).astype("int")
+        
+        return(dist)
+
     def render_seq_bttn_click(b):
         with output3:
             clear_output()
@@ -27,10 +40,10 @@ def get_render_controls(model, seeds_updater):
             create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
     def render_sequence(model, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
-        STEPS = num_steps
-
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
+
+        distances_norm = get_normalized_distances(seeds, num_steps)
 
         os.system(f"rm {os.path.join(sequence_folder, '*')}")
 
@@ -42,14 +55,14 @@ def get_render_controls(model, seeds_updater):
             v2 = seed2vec(model.model, seeds[i+1])
 
             diff = v2 - v1
-            step = diff / STEPS
+            step = diff / distances_norm[i]
             current = v1.clone().detach()
 
-            for s, j in enumerate(range(STEPS)):
-                tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*STEPS + s} / {(len(seeds) - 1) * STEPS}")
+            for s, j in enumerate(range(distances_norm[i])):
+                tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*distances_norm[i] + s} / {(len(seeds) - 1) * distances_norm[i]}")
                 tqdm_progress.refresh()
 
-                now = current + diff * easing((s + 0.01 ) / STEPS, easy_ease)
+                now = current + diff * easing((s + 0.01 ) / distances_norm[i], easy_ease)
                 img = generate_image(model.model, now, 1.0)
                 img.save(os.path.join(output_folder,f'frame-{idx}.png'))
                 idx+=1
