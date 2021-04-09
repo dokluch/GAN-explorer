@@ -180,12 +180,10 @@ def generate_image(Gs, z, truncation_psi):
     return img
 
 
-def get_render_controls(model, seeds_updater):
+def get_render_controls(model, seeds_updater, sequence_folder = "/content/sequence", video_folder = "/content/renders"):
     STEPS = 100
     easy_ease = 1
     loop = True
-    sequence_folder = "/content/sequence"
-    video_folder = "/content/renders"
     SEEDS = [39644, 35189, 4531, 11258, 7987] #MANUANAL
     FPS = 25
 
@@ -280,9 +278,9 @@ def get_render_controls(model, seeds_updater):
 
     return(sliders, bttns, output3)
 
-def get_model_loader(model):
-    models_list = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir("/content/models")]
-    models_paths = [os.path.join("/content/models",f) for f in os.listdir("/content/models")]
+def get_model_loader(model, models_folder = "/content/models"):
+    models_list = [os.path.splitext(os.path.basename(f))[0] for f in os.listdir(models_folder)]
+    models_paths = [os.path.join(models_folder,f) for f in os.listdir(models_folder)]
     models_dict = dict(zip(models_list, models_paths))
 
     def load_model_onclick(b):
