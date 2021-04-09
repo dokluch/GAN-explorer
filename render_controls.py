@@ -18,9 +18,10 @@ def get_render_controls(model, seeds_updater):
 
         for t in range(len(vecs) - 1):
             dist.append(((vecs[t]-vecs[t + 1])**2).sum(axis=1).item()) #Euclidian distance
-            dist /= np.average(dist)
-            factor = len(dist) * frames / sum(dist)
-            dist = (factor * dist).astype("int")
+            
+        dist /= np.average(dist)
+        factor = len(dist) * frames / sum(dist)
+        dist = (factor * dist).astype("int")
         
         return(dist)
 
