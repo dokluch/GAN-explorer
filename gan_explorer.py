@@ -220,7 +220,7 @@ def get_render_controls(model, seeds_updater, sequence_folder = "/content/sequen
             clear_output()
             assert seeds_updater.seed_list
             seeds = seeds_updater.seed_list
-            render_sequence(model, seeds, steps_slider.value, sequence_folder, easing_slider.value, loop_chkbx.value)
+            render_sequence(model, settings, seeds, steps_slider.value, sequence_folder, easing_slider.value, loop_chkbx.value)
 
     def render_vid_bttn_click(b):
         with output3:
@@ -230,7 +230,7 @@ def get_render_controls(model, seeds_updater, sequence_folder = "/content/sequen
             SEEDS = seeds_updater.seed_list
             create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
-    def render_sequence(model, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
+    def render_sequence(model, settings, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
@@ -254,7 +254,7 @@ def get_render_controls(model, seeds_updater, sequence_folder = "/content/sequen
                 tqdm_progress.refresh()
 
                 now = current + diff * easing((s + 0.01 ) / distances_norm[i], easy_ease)
-                img = generate_image(model.model, now)
+                img = generate_image(model.model, settings, now)
                 img.save(os.path.join(output_folder,f'frame-{idx}.png'))
                 idx+=1
 
