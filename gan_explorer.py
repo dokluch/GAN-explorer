@@ -189,7 +189,7 @@ def generate_image(Gs, settings, w):
     return img
 
 
-def get_render_controls(model, seeds_updater, sequence_folder = "/content/sequence", video_folder = "/content/renders"):
+def get_render_controls(model, settings, seeds_updater, sequence_folder = "/content/sequence", video_folder = "/content/renders"):
     STEPS = 100
     easy_ease = 1
     loop = True
