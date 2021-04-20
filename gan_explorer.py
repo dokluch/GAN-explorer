@@ -53,7 +53,7 @@ class settings_updater:
     def __init__(self):
         self.truncation_psi = 0.7
         self.truncation_cutoff = 8
-        
+
     def update_truncation(truncation_psi, truncation_cutoff):
         self.truncation_psi = truncation_psi
         self.truncation_cutoff = truncation_cutoff
@@ -108,7 +108,7 @@ def get_timeline_controls(model, seeds_updater, settings):
             clear_output()
             seed_gen = np.random.randint(0, 400000)
             print(seed_gen)
-            b.img = make_img_from_seed(model.model, seed_gen).resize((256,256))
+            b.img = make_img_from_seed(model.model, settings, seed_gen).resize((256,256))
             display(b.img)
             b.seed = seed_gen
             b.prev_seeds.append(b.seed)
@@ -120,7 +120,7 @@ def get_timeline_controls(model, seeds_updater, settings):
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos >= 1:
                 button_get_random.pos -= 1
                 button_get_random.seed = button_get_random.prev_seeds[button_get_random.pos]
-                button_get_random.img = make_img_from_seed(model.model, button_get_random.seed).resize((256,256))
+                button_get_random.img = make_img_from_seed(model.model, settings, button_get_random.seed).resize((256,256))
                 clear_output()
                 print(button_get_random.seed)
                 display(button_get_random.img)
@@ -131,7 +131,7 @@ def get_timeline_controls(model, seeds_updater, settings):
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos < len(button_get_random.prev_seeds) - 1:
                 button_get_random.pos += 1
                 button_get_random.seed = button_get_random.prev_seeds[button_get_random.pos]
-                button_get_random.img = make_img_from_seed(model.model, button_get_random.seed).resize((256,256))
+                button_get_random.img = make_img_from_seed(model.model, settings, button_get_random.seed).resize((256,256))
                 clear_output()
                 print(button_get_random.seed)
                 display(button_get_random.img)
