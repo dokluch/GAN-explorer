@@ -202,7 +202,7 @@ def get_render_controls(model, settings, seeds_updater, sequence_folder = "/cont
 
     def get_normalized_distances(seeds, frames):
 
-        vecs = [seed2vec(model.model, s) for s in seeds]
+        vecs = [seed2vec(model.model, settings, s) for s in seeds]
         dist = []
 
         for t in range(len(vecs) - 1):
@@ -242,8 +242,8 @@ def get_render_controls(model, settings, seeds_updater, sequence_folder = "/cont
         tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
 
         for i in tqdm_progress:
-            w1 = seed2vec(model.model, seeds[i])
-            w2 = seed2vec(model.model, seeds[i+1])
+            w1 = seed2vec(model.model, settings, seeds[i])
+            w2 = seed2vec(model.model, settings, seeds[i+1])
 
             diff = w2 - w1
             step = diff / distances_norm[i]
