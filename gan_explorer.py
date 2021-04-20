@@ -155,11 +155,9 @@ def make_img_from_seed(Gs, seed_in = 0):
 
     return(img)
 
-def make_img_from_vec(Gs, vec_in = 0):
+def make_img_from_vec(Gs, w_in):
     c = None
-    w = Gs.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
-    img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
-
+    img = Gs.synthesis(w_in, noise_mode='const', force_fp32=True)
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
 
@@ -168,9 +166,10 @@ def make_img_from_vec(Gs, vec_in = 0):
 def seed2vec(Gs, seed_in = 0):
     torch.manual_seed(seed_in)
     z = torch.randn([1, Gs.z_dim]).cuda()
-    return z
+    w = Gs.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
+    return w
 
-def generate_image(Gs, z, truncation_psi):
+def generate_image(Gs, w):
     c = None
     w = Gs.mapping(z, c, truncation_psi=0.7, truncation_cutoff=8)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
@@ -233,19 +232,19 @@ def get_render_controls(model, seeds_updater, sequence_folder = "/content/sequen
         tqdm_progress = tqdm(range(len(seeds)-1), desc = "", leave=True)
 
         for i in tqdm_progress:
-            v1 = seed2vec(model.model, seeds[i])
-            v2 = seed2vec(model.model, seeds[i+1])
+            w1 = seed2vec(model.model, seeds[i])
+            w2 = seed2vec(model.model, seeds[i+1])
 
-            diff = v2 - v1
+            diff = w2 - w1
             step = diff / distances_norm[i]
-            current = v1.clone().detach()
+            current = w1.clone().detach()
 
             for s, j in enumerate(range(distances_norm[i])):
                 tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*distances_norm[i] + s} / {(len(seeds) - 1) * distances_norm[i]}")
                 tqdm_progress.refresh()
 
                 now = current + diff * easing((s + 0.01 ) / distances_norm[i], easy_ease)
-                img = generate_image(model.model, now, 1.0)
+                img = generate_image(model.model, now)
                 img.save(os.path.join(output_folder,f'frame-{idx}.png'))
                 idx+=1
 
