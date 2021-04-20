@@ -41,25 +41,34 @@ class seeds_updater:
         self.seed_list.append(seed)
         self.imgs_list.append(img)
 
-    def remove_last(self):
+    def remove_last_seed(self):
         self.seed_list = self.seed_list[:-1]
         self.imgs_list = self.imgs_list[:-1]
         
-    def reset(self):
+    def reset_seeds(self):
         self.seed_list = []
         self.imgs_list = []
+        
+class settings_updater:
+    def __init__(self):
+        self.truncation_psi = 0.7
+        self.truncation_cutoff = 8
+        
+    def update_truncation(truncation_psi, truncation_cutoff):
+        self.truncation_psi = truncation_psi
+        self.truncation_cutoff = truncation_cutoff
 
 
-def get_timeline_controls(model, seeds_updater):
+def get_timeline_controls(model, seeds_updater, settings):
     button_get_random = widgets.Button(description="Get random seed")
     button_prev = widgets.Button(description="<<<")
     button_next = widgets.Button(description=">>>")
     buttons_line_1 = widgets.HBox([button_prev, button_get_random, button_next])
 
     button_add_seed = widgets.Button(description="Add seed")
-    button_remove_last = widgets.Button(description="Remove last seed")
-    button_reset = widgets.Button(description="Reset timeline")
-    buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last, button_reset])
+    button_remove_last_seed = widgets.Button(description="Remove last seed")
+    button_reset_seeds = widgets.Button(description="Reset_seeds timeline")
+    buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last_seed, button_reset_seeds])
 
     output = widgets.Output()
     output2 = widgets.Output()
@@ -76,18 +85,18 @@ def get_timeline_controls(model, seeds_updater):
             print(seeds_updater.seed_list)
             display_seeds_as_imgs()
 
-    def on_remove_last(b):
+    def on_remove_last_seed(b):
         with output2:
             clear_output()
             if(seeds_updater.seed_list):
-                seeds_updater.remove_last()
+                seeds_updater.remove_last_seed()
                 print(seeds_updater.seed_list)
                 display_seeds_as_imgs()
 
-    def on_reset(b):
+    def on_reset_seeds(b):
         with output2:
             clear_output()
-            seeds_updater.reset()
+            seeds_updater.reset_seeds()
             display_seeds_as_imgs()
 
     def display_seeds_as_imgs():
@@ -132,8 +141,8 @@ def get_timeline_controls(model, seeds_updater):
     button_add_seed.seeds = []
     button_add_seed.imgs = []
     button_add_seed.on_click(on_save_clicked)
-    button_remove_last.on_click(on_remove_last)
-    button_reset.on_click(on_reset)
+    button_remove_last_seed.on_click(on_remove_last_seed)
+    button_reset_seeds.on_click(on_reset_seeds)
 
     button_get_random.prev_seeds = []
     button_get_random.on_click(on_random_clicked)
@@ -143,11 +152,11 @@ def get_timeline_controls(model, seeds_updater):
 
     return(output, buttons_line_1, buttons_line_2, output2)
 
-def make_img_from_seed(Gs, seed_in = 0):
+def make_img_from_seed(Gs, settings, seed_in = 0):
     torch.manual_seed(seed_in)
     z1 = torch.randn([1, Gs.z_dim]).cuda() 
     c = None #class
-    w = Gs.mapping(z1, c, truncation_psi=0.7, truncation_cutoff=8)
+    w = Gs.mapping(z1, c, settings.truncation_psi, settings.truncation_cutoff)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
 
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
@@ -163,15 +172,16 @@ def make_img_from_vec(Gs, w_in):
 
     return(img)
     
-def seed2vec(Gs, seed_in = 0):
+def seed2vec(Gs, settings, seed_in = 0):
+    c = None
     torch.manual_seed(seed_in)
     z = torch.randn([1, Gs.z_dim]).cuda()
-    w = Gs.mapping(z, c, truncation_psi=0.7, truncation_cutoff=8)
+    w = Gs.mapping(z, c, settings.truncation_psi, settings.truncation_cutoff)
     return w
 
-def generate_image(Gs, w):
+def generate_image(Gs, settings, w):
     c = None
-    w = Gs.mapping(z, c, truncation_psi=0.7, truncation_cutoff=8)
+    w = Gs.mapping(z, c, settings.truncation_psi, settings.truncation_cutoff)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
 
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
