@@ -48,6 +48,10 @@ class seeds_updater:
     def reset_seeds(self):
         self.seed_list = []
         self.imgs_list = []
+
+    def replace_seeds(self, seeds, imgs):
+        self.seed_list = seeds
+        self.imgs_list = imgs
         
 class settings_updater:
     def __init__(self):
@@ -69,6 +73,10 @@ def get_timeline_controls(model, seeds_updater, settings):
     button_remove_last_seed = widgets.Button(description="Remove last seed")
     button_reset_seeds = widgets.Button(description="Reset_seeds timeline")
     buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last_seed, button_reset_seeds])
+
+    manual_seeds = widgets.Text(value='', disabled=False)
+    button_load_seeds = widgets.Button(description="Load seeds")
+    buttons_line_3 = widgets.HBox([manual_seeds, button_load_seeds])
 
     output = widgets.Output()
     output2 = widgets.Output()
@@ -115,6 +123,16 @@ def get_timeline_controls(model, seeds_updater, settings):
             b.pos = len(b.prev_seeds)
             print(b.prev_seeds)
 
+    def on_load_clicked(b):
+        with output2:
+            seeds = manual_seeds.value.split("_")
+            if seeds[-1] == seeds[0]:
+                seeds.pop()
+
+            imgs = [generate_image(model.model, settings, seed2vec(model.model, settings, s)) for s in seeds]
+            seeds_updater.replace_seeds(seeds, imgs)
+            
+
     def on_prev(b):
         with output:
             if len(button_get_random.prev_seeds) > 1 and button_get_random.pos >= 1:
@@ -150,7 +168,9 @@ def get_timeline_controls(model, seeds_updater, settings):
     button_next.on_click(on_next)
     on_random_clicked(button_get_random)
 
-    return(output, buttons_line_1, buttons_line_2, output2)
+    button_load_seeds.on_click(on_load_clicked)
+
+    return(output, buttons_line_1, buttons_line_2, buttons_line_3, output2)
 
 def make_img_from_seed(Gs, settings, seed_in = 0):
     torch.manual_seed(seed_in)
