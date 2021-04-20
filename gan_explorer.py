@@ -166,7 +166,7 @@ def make_img_from_vec(Gs, w_in):
 def seed2vec(Gs, seed_in = 0):
     torch.manual_seed(seed_in)
     z = torch.randn([1, Gs.z_dim]).cuda()
-    w = Gs.mapping(vec_in, c, truncation_psi=0.7, truncation_cutoff=8)
+    w = Gs.mapping(z, c, truncation_psi=0.7, truncation_cutoff=8)
     return w
 
 def generate_image(Gs, w):
