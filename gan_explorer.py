@@ -131,6 +131,7 @@ def get_timeline_controls(model, seeds_updater, settings):
 
             imgs = [generate_image(model.model, settings, seed2vec(model.model, settings, s)) for s in seeds]
             seeds_updater.replace_seeds(seeds, imgs)
+            display_seeds_as_imgs()
             
 
     def on_prev(b):
