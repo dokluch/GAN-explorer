@@ -180,10 +180,7 @@ def seed2vec(Gs, settings, seed_in = 0):
     return w
 
 def generate_image(Gs, settings, w):
-    c = None
-    w = Gs.mapping(z, c, settings.truncation_psi, settings.truncation_cutoff)
     img = Gs.synthesis(w, noise_mode='const', force_fp32=True)
-
     img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
     return img
@@ -234,7 +231,7 @@ def get_render_controls(model, settings, seeds_updater, sequence_folder = "/cont
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
-        distances_norm = get_normalized_distances(seeds, num_steps)
+#         distances_norm = get_normalized_distances(seeds, num_steps)
 
         os.system(f"rm {os.path.join(sequence_folder, '*')}")
 
@@ -246,14 +243,14 @@ def get_render_controls(model, settings, seeds_updater, sequence_folder = "/cont
             w2 = seed2vec(model.model, settings, seeds[i+1])
 
             diff = w2 - w1
-            step = diff / distances_norm[i]
+            step = diff / num_steps
             current = w1.clone().detach()
 
-            for s, j in enumerate(range(distances_norm[i])):
-                tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*distances_norm[i] + s} / {(len(seeds) - 1) * distances_norm[i]}")
+            for s, j in enumerate(range(num_steps)):
+                tqdm_progress.set_description(f"State: {i + 1}/{len(seeds) - 1} | Frame: {i*num_steps + s} / {(len(seeds) - 1) * num_steps}")
                 tqdm_progress.refresh()
 
-                now = current + diff * easing((s + 0.01 ) / distances_norm[i], easy_ease)
+                now = current + diff * easing((s + 0.01 ) / num_steps, easy_ease)
                 img = generate_image(model.model, settings, now)
                 img.save(os.path.join(output_folder,f'frame-{idx}.png'))
                 idx+=1
