@@ -7,6 +7,7 @@ SOURCES = {
         'art-faces-256': 'https://www.dropbox.com/s/8shgau6vvj8mfcw/256-art-faces.tar',
         'art-landscapes-art-256': 'https://www.dropbox.com/s/wc2jr1c0kzgxgzf/256-art-landscapes.tar',
         'mountains-256': 'https://www.dropbox.com/s/7e3y2xkn08mthct/256-mountains.tar',
+        'abstract-256': 'https://www.dropbox.com/s/aulruyosqumnn5f/256-abstract.tar'
     },
     'ISR': {
         'ISR': 'https://www.dropbox.com/s/5bwx7imm3w3ato7/rrdn-C4-D3-G32-G032-T10-x4.tar',
