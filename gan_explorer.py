@@ -76,7 +76,7 @@ def get_timeline_controls(model, seeds_updater, settings, output_folder):
     button_reset_seeds = widgets.Button(description="Reset_seeds timeline")
     buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last_seed, button_reset_seeds])
 
-    amount_seeds = widgets.Text(value='', disabled=False)
+    amount_seeds = widgets.Text(value='100', disabled=False)
     button_amount_seeds = widgets.Button(description="Generate N seeds")
     buttons_line_3 = widgets.HBox([amount_seeds, button_amount_seeds])
 
