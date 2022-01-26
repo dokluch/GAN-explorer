@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os, math, ipyplot
+from pathlib import Path
 import numpy as np
 import torch, torchvision, pickle
 import PIL
@@ -11,6 +12,7 @@ from IPython.display import display, clear_output
 from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 from tqdm.notebook import tqdm
+
 
 class stylegan2_ada_model:
     def __init__(self):
@@ -63,7 +65,7 @@ class settings_updater:
         self.truncation_cutoff = truncation_cutoff
 
 
-def get_timeline_controls(model, seeds_updater, settings):
+def get_timeline_controls(model, seeds_updater, settings, output_folder):
     button_get_random = widgets.Button(description="Get random seed")
     button_prev = widgets.Button(description="<<<")
     button_next = widgets.Button(description=">>>")
@@ -74,9 +76,9 @@ def get_timeline_controls(model, seeds_updater, settings):
     button_reset_seeds = widgets.Button(description="Reset_seeds timeline")
     buttons_line_2 = widgets.HBox([button_add_seed, button_remove_last_seed, button_reset_seeds])
 
-    manual_seeds = widgets.Text(value='', disabled=False)
-    button_load_seeds = widgets.Button(description="Load seeds")
-    buttons_line_3 = widgets.HBox([manual_seeds, button_load_seeds])
+    amount_seeds = widgets.Text(value='', disabled=False)
+    button_amount_seeds = widgets.Button(description="Generate N seeds")
+    buttons_line_3 = widgets.HBox([amount_seeds, button_amount_seeds])
 
     output = widgets.Output()
     output2 = widgets.Output()
@@ -125,13 +127,9 @@ def get_timeline_controls(model, seeds_updater, settings):
 
     def on_load_clicked(b):
         with output2:
-            seeds = manual_seeds.value.split("_")
-            if seeds[-1] == seeds[0]:
-                seeds.pop()
-
-            imgs = [generate_image(model.model, settings, seed2vec(model.model, settings, s)) for s in seeds]
-            seeds_updater.replace_seeds(seeds, imgs)
-            display_seeds_as_imgs()
+            gen_amount = int(amount_seeds.value)
+            gen_amount = min(1, gen_amount)
+            gen_n_random(model.model, settings, gen_amount, output_folder)
             
 
     def on_prev(b):
@@ -169,7 +167,7 @@ def get_timeline_controls(model, seeds_updater, settings):
     button_next.on_click(on_next)
     on_random_clicked(button_get_random)
 
-    button_load_seeds.on_click(on_load_clicked)
+    button_amount_seeds.on_click(on_load_clicked)
 
     return(output, buttons_line_1, buttons_line_2, buttons_line_3, output2)
 
@@ -193,9 +191,14 @@ def make_img_from_vec(Gs, w_in):
 
     return(img)
     
-def seed2vec(Gs, settings, seed_in = 0):
+def seed2vec(Gs, settings, seed_in = None):
+    '''
+    Generate vector from seed
+    Alternatively, just get a random vector
+    '''
     c = None
-    torch.manual_seed(seed_in)
+    if seed_in:
+        torch.manual_seed(seed_in)
     z = torch.randn([1, Gs.z_dim]).cuda()
     w = Gs.mapping(z, c, settings.truncation_psi, settings.truncation_cutoff)
     return w
@@ -206,12 +209,20 @@ def generate_image(Gs, settings, w):
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
     return img
 
+def gen_n_random(Gs, settings, amount, output_folder):
+    Path(output_folder).mkdir(exist_ok=True, parents=True)
+
+    for i in range(amount):
+        w = seed2vec(Gs, settings)
+        img = generate_image(Gs, settings, w)
+        img.save(os.path.join(output_folder, f"frame_{str(i + 1)}.png"))
+
 
 def get_render_controls(model, settings, seeds_updater, sequence_folder = "/content/sequence", video_folder = "/content/renders"):
     STEPS = 100
     easy_ease = 1
     loop = True
-    SEEDS = [39644, 35189, 4531, 11258, 7987] #MANUANAL
+    SEEDS = [39644, 35189, 4531, 11258, 7987] #MANUAL
     FPS = 25
 
     def easing(x, beta):
@@ -249,6 +260,7 @@ def get_render_controls(model, settings, seeds_updater, sequence_folder = "/cont
             create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
     def render_sequence(model, settings, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
+        Path(output_folder).mkdir(exists_ok=True, parents=True)
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
