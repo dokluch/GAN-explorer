@@ -12,7 +12,7 @@ from IPython.display import display, clear_output
 from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 from tqdm.notebook import tqdm
-
+from datetime import datetime
 
 class stylegan2_ada_model:
     def __init__(self):
@@ -128,7 +128,7 @@ def get_timeline_controls(model, seeds_updater, settings, output_folder):
     def on_load_clicked(b):
         with output2:
             gen_amount = int(amount_seeds.value)
-            gen_amount = min(1, gen_amount)
+            gen_amount = max(1, gen_amount)
             gen_n_random(model.model, settings, gen_amount, output_folder)
             
 
@@ -209,13 +209,24 @@ def generate_image(Gs, settings, w):
     img = PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB')
     return img
 
-def gen_n_random(Gs, settings, amount, output_folder):
+def get_datetime():
+    return datetime.today().strftime('%Y_%m_%d-%H-%M-%S')
+
+def gen_n_random(Gs, settings, amount, output_folder, append_time = True):
+    if append_time: 
+        output_folder = os.path.join(output_folder, 'Random', get_datetime())
+
     Path(output_folder).mkdir(exist_ok=True, parents=True)
 
-    for i in range(amount):
+    tqdm_progress = tqdm(range(amount), desc = "", leave = True)
+
+    for i in tqdm_progress:
         w = seed2vec(Gs, settings)
         img = generate_image(Gs, settings, w)
         img.save(os.path.join(output_folder, f"frame_{str(i + 1)}.png"))
+
+        tqdm_progress.set_description(f"Random pics: {i + 1}/{amount}")
+        tqdm_progress.refresh()
 
 
 def get_render_controls(model, settings, seeds_updater, sequence_folder = "/content/sequence", video_folder = "/content/renders"):
@@ -259,8 +270,10 @@ def get_render_controls(model, settings, seeds_updater, sequence_folder = "/cont
             SEEDS = seeds_updater.seed_list
             create_video(sequence_folder, video_folder, fps_text.value, SEEDS)
 
-    def render_sequence(model, settings, seeds, num_steps, output_folder, easy_ease = 1, loop = True):
-        Path(output_folder).mkdir(exists_ok=True, parents=True)
+    def render_sequence(model, settings, seeds, num_steps, output_folder, easy_ease = 1, loop = True, append_date = True):
+        output_folder = os.path.join(output_folder, 'Morphs', get_datetime())
+
+        Path(output_folder).mkdir(exist_ok=True, parents=True)
         if loop and seeds[-1] != seeds[0]:
             seeds.append(seeds[0])
 
